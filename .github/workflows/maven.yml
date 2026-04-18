@@ -1,0 +1,32 @@
+# Задание 1: pipeline — шаги test и build (Maven, модуль adboard/)
+name: CI
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+    branches: [master, main]
+
+jobs:
+  test-and-build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: adboard
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: "17"
+          distribution: temurin
+          cache: maven
+
+      - name: Test
+        run: chmod +x mvnw && ./mvnw -B test
+
+      - name: Build
+        run: ./mvnw -B package -DskipTests

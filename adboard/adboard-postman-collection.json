@@ -1,0 +1,479 @@
+{
+  "info": {
+    "name": "Adboard API",
+    "description": "Коллекция запросов для сервиса онлайн-доски объявлений (CRUD + бизнес-операции). Базовый URL хранится в переменной `baseUrl`.",
+    "_postman_id": "adboard-collection-placeholder-id",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8081"
+    },
+    {
+      "key": "userId",
+      "value": ""
+    },
+    {
+      "key": "userId2",
+      "value": ""
+    },
+    {
+      "key": "categoryId",
+      "value": ""
+    },
+    {
+      "key": "listingId",
+      "value": ""
+    },
+    {
+      "key": "reportId",
+      "value": ""
+    },
+    {
+      "key": "messageId",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Create user",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Alice\",\n  \"email\": \"alice@example.com\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get all users",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users"]
+            }
+          }
+        },
+        {
+          "name": "Get user by id",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/users/{{userId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "{{userId}}"]
+            }
+          }
+        },
+        {
+          "name": "Update user",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/{{userId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "{{userId}}"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Alice Updated\",\n  \"email\": \"alice.updated@example.com\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete user",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/api/users/{{userId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "{{userId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Categories",
+      "item": [
+        {
+          "name": "Create category",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/categories",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "categories"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Electronics\",\n  \"description\": \"Гаджеты и техника\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get all categories",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/categories",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "categories"]
+            }
+          }
+        },
+        {
+          "name": "Get category by id",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/categories/{{categoryId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "categories", "{{categoryId}}"]
+            }
+          }
+        },
+        {
+          "name": "Update category",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/categories/{{categoryId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "categories", "{{categoryId}}"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Electronics & Phones\",\n  \"description\": \"Обновлённое описание\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete category",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/api/categories/{{categoryId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "categories", "{{categoryId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Listings (ads)",
+      "item": [
+        {
+          "name": "Create listing (draft)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/listings?ownerId={{userId}}&categoryId={{categoryId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "listings"],
+              "query": [
+                { "key": "ownerId", "value": "{{userId}}" },
+                { "key": "categoryId", "value": "{{categoryId}}" }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"iPhone 13\",\n  \"description\": \"Почти новый, без царапин\",\n  \"price\": 50000,\n  \"status\": \"DRAFT\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get all listings",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/listings",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "listings"]
+            }
+          }
+        },
+        {
+          "name": "Get listing by id",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/listings/{{listingId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "listings", "{{listingId}}"]
+            }
+          }
+        },
+        {
+          "name": "Update listing",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/listings/{{listingId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "listings", "{{listingId}}"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"iPhone 13 Pro\",\n  \"description\": \"Состояние отличное\",\n  \"price\": 55000,\n  \"status\": \"DRAFT\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete listing",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/api/listings/{{listingId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "listings", "{{listingId}}"]
+            }
+          }
+        },
+        {
+          "name": "Publish listing (business)",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/listings/{{listingId}}/publish",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "listings", "{{listingId}}", "publish"]
+            }
+          }
+        },
+        {
+          "name": "Close listing (business)",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/listings/{{listingId}}/close",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "listings", "{{listingId}}", "close"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Messages",
+      "item": [
+        {
+          "name": "Create message (business)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/messages?senderId={{userId}}&receiverId={{userId2}}&listingId={{listingId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "messages"],
+              "query": [
+                { "key": "senderId", "value": "{{userId}}" },
+                { "key": "receiverId", "value": "{{userId2}}" },
+                { "key": "listingId", "value": "{{listingId}}" }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"text\": \"Здравствуйте, актуально?\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get all messages",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/messages",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "messages"]
+            }
+          }
+        },
+        {
+          "name": "Get message by id",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/messages/{{messageId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "messages", "{{messageId}}"]
+            }
+          }
+        },
+        {
+          "name": "Update message text",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/messages/{{messageId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "messages", "{{messageId}}"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"text\": \"Обновлённый текст сообщения\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete message",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/api/messages/{{messageId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "messages", "{{messageId}}"]
+            }
+          }
+        },
+        {
+          "name": "Conversation for listing (business)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/messages/listing/{{listingId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "messages", "listing", "{{listingId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reports",
+      "item": [
+        {
+          "name": "Create report (business)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/reports?authorId={{userId2}}&listingId={{listingId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "reports"],
+              "query": [
+                { "key": "authorId", "value": "{{userId2}}" },
+                { "key": "listingId", "value": "{{listingId}}" }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Неверная информация\",\n  \"status\": \"NEW\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get all reports",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/reports",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "reports"]
+            }
+          }
+        },
+        {
+          "name": "Get report by id",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/reports/{{reportId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "reports", "{{reportId}}"]
+            }
+          }
+        },
+        {
+          "name": "Update report status/reason",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/reports/{{reportId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "reports", "{{reportId}}"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Обновлённая причина\",\n  \"status\": \"IN_REVIEW\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete report",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/api/reports/{{reportId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "reports", "{{reportId}}"]
+            }
+          }
+        },
+        {
+          "name": "Mark report in review (business)",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/reports/{{reportId}}/in-review",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "reports", "{{reportId}}", "in-review"]
+            }
+          }
+        },
+        {
+          "name": "Resolve report and close listing (business)",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/reports/{{reportId}}/resolve-and-close-listing",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "reports", "{{reportId}}", "resolve-and-close-listing"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
+
