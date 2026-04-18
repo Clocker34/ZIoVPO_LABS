@@ -11,7 +11,7 @@ public class InfoController {
     @GetMapping("/info")
     public Map<String, Object> info() {
         return Map.of(
-                "service", "adboard",
+                "service", "ziovpo-server",
                 "version", "0.0.1",
                 "status", "OK"
         );

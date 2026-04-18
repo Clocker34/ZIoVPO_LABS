@@ -11,8 +11,8 @@
 	<groupId>ru.rkjrth</groupId>
 	<artifactId>adboard</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>adboard</name>
-	<description>Онлайн-доска объявлений с REST API, PostgreSQL и бизнес-операциями</description>
+	<name>ziovpo-server</name>
+	<description>Сервер ЗИоВПО: JWT, PostgreSQL, лицензирование; без домена доски объявлений</description>
 	<properties>
 		<java.version>17</java.version>
 	</properties>

@@ -1,13 +1,9 @@
 package ru.rkjrth.adboard.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Table(name = "users", uniqueConstraints = {
@@ -46,22 +42,6 @@ public class User {
     @Column(name = "password_hash", nullable = true)
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String passwordHash;
-
-    @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonIgnore
-    private List<Listing> listings = new ArrayList<>();
-
-    @OneToMany(mappedBy = "sender")
-    @JsonIgnore
-    private List<Message> sentMessages = new ArrayList<>();
-
-    @OneToMany(mappedBy = "receiver")
-    @JsonIgnore
-    private List<Message> receivedMessages = new ArrayList<>();
-
-    @OneToMany(mappedBy = "author")
-    @JsonIgnore
-    private List<Report> reports = new ArrayList<>();
 
     public Long getId() {
         return id;

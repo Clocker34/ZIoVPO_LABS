@@ -69,7 +69,7 @@ class AuthTokenIntegrationTest {
         String access = loginJson.get("accessToken").asText();
         String refresh = loginJson.get("refreshToken").asText();
 
-        mockMvc.perform(get("/api/categories")
+        mockMvc.perform(get("/api/ping")
                         .header("Authorization", "Bearer " + access))
                 .andExpect(status().isOk());
 
