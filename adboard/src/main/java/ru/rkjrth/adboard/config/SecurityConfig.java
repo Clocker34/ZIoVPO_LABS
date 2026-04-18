@@ -31,6 +31,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/auth/refresh").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/licenses/activate").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/licenses/check").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/licenses/catalog").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/licenses/signing-public-key").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/licenses/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/users/**").hasRole("ADMIN")

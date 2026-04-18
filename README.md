@@ -37,6 +37,20 @@ cd adboard
 
 Проверка работы JWT для пользователя с ролью USER: после логина вызвать **`GET /api/ping`** с заголовком **`Authorization: Bearer <access>`**.
 
+### Локальная PostgreSQL и Postman
+
+**База в Docker** (из корня репозитория):
+
+```powershell
+docker compose up -d
+```
+
+На хосте по умолчанию порт **`5433`** → в **`.env`** или переменных IDE задайте **`SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5433/adboard`** и **`SPRING_DATASOURCE_PASSWORD=adboard123`** (см. актуальный **`.env.example`**). Шаблон **`.env`** скопируйте из **`.env.example`**.
+
+При пустых таблицах продуктов приложение один раз создаёт демо-продукт и тип лицензии; UUID для запросов можно взять из **`GET /api/licenses/catalog`** (без авторизации).
+
+**Коллекция Postman:** файл **`postman/ZIoVPO-server.postman_collection.json`**. Импорт в Postman → **Import**. В коллекции переменная **`baseUrl`** (`http://localhost:8082`), скрипты сохраняют токены и поля после логина, регистрации пользователя и **`GET /api/licenses/catalog`**. Перед сценарием лицензии выполните вручную или через Collection Runner по порядку: логин админа → регистрация пользователя **`license_holder_demo`** (при конфликте имени смените username в теле запроса) → каталог → создание лицензии → остальное.
+
 ---
 
 ## Задание 2. Модуль управления лицензиями

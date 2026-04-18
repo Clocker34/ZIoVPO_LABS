@@ -6,7 +6,7 @@ services:
     environment:
       POSTGRES_DB: adboard
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-adboard_local}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-adboard123}
     # Если 5432 занят локальным PostgreSQL — используем 5433 на хосте
     ports:
       - "${POSTGRES_HOST_PORT:-5433}:5432"

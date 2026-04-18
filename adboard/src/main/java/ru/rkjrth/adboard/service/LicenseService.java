@@ -11,6 +11,9 @@ import ru.rkjrth.adboard.security.TicketSigner;
 import java.security.SecureRandom;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -257,6 +260,31 @@ public class LicenseService {
             sb.append(String.format("%02x", value));
         }
         return sb.toString();
+    }
+
+    /** Каталог продуктов и типов лицензий (для клиента / Postman — UUID для создания лицензии). */
+    @Transactional(readOnly = true)
+    public Map<String, Object> catalog() {
+        List<Map<String, Object>> products = productRepository.findAll().stream()
+                .map(p -> {
+                    Map<String, Object> m = new LinkedHashMap<>();
+                    m.put("id", p.getId());
+                    m.put("name", p.getName());
+                    m.put("blocked", p.isBlocked());
+                    return m;
+                })
+                .toList();
+        List<Map<String, Object>> types = licenseTypeRepository.findAll().stream()
+                .map(t -> {
+                    Map<String, Object> m = new LinkedHashMap<>();
+                    m.put("id", t.getId());
+                    m.put("name", t.getName());
+                    m.put("defaultDurationInDays", t.getDefaultDurationInDays());
+                    m.put("description", t.getDescription());
+                    return m;
+                })
+                .toList();
+        return Map.of("products", products, "types", types);
     }
 
     /** DER X.509 SPKI Base64 для клиентской проверки подписи тикета. */

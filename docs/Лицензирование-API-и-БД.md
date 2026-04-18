@@ -36,6 +36,7 @@
 
 | Операция | Метод и путь | Авторизация |
 |----------|----------------|-------------|
+| Каталог продуктов и типов (UUID для создания лицензии) | `GET /api/licenses/catalog` | без JWT |
 | Создание | `POST /api/licenses/admin/create` | JWT, роль **ADMIN** |
 | Продление | `POST /api/licenses/admin/renew` | JWT, **ADMIN** |
 | Активация | `POST /api/licenses/activate` | без JWT |

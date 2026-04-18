@@ -3,6 +3,7 @@ package ru.rkjrth.adboard.controller;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import ru.rkjrth.adboard.dto.license.*;
 import ru.rkjrth.adboard.service.LicenseService;
 
@@ -16,6 +17,12 @@ public class LicenseController {
 
     public LicenseController(LicenseService licenseService) {
         this.licenseService = licenseService;
+    }
+
+    /** Продукты и типы лицензий (публично — для получения UUID перед созданием лицензии админом). */
+    @GetMapping("/catalog")
+    public Map<String, Object> catalog() {
+        return licenseService.catalog();
     }
 
     /** Создание лицензии (администратор). */
