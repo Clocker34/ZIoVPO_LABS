@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 import java.util.UUID;
 
 @Entity
-@Table(name = "license_products")
+@Table(name = "product")
 public class LicenseProduct {
 
     @Id

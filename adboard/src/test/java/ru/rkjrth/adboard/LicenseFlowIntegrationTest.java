@@ -16,7 +16,7 @@ import ru.rkjrth.adboard.repository.LicenseProductRepository;
 import ru.rkjrth.adboard.repository.LicenseRepository;
 import ru.rkjrth.adboard.repository.LicenseTypeRepository;
 import ru.rkjrth.adboard.repository.UserRepository;
-import ru.rkjrth.adboard.security.TicketSigner;
+import ru.mfa.signature.SigningService;
 import ru.rkjrth.adboard.service.LicenseService;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -30,7 +30,7 @@ class LicenseFlowIntegrationTest {
     private LicenseService licenseService;
 
     @Autowired
-    private TicketSigner ticketSigner;
+    private SigningService signingService;
 
     @Autowired
     private UserRepository userRepository;
@@ -109,7 +109,7 @@ class LicenseFlowIntegrationTest {
 
         TicketResponse ticketResponse = licenseService.checkLicense(check);
         assertThat(ticketResponse.getSignatureBase64()).isNotBlank();
-        assertThat(ticketSigner.verify(ticketResponse.getTicket(), ticketResponse.getSignatureBase64())).isTrue();
+        assertThat(signingService.verify(ticketResponse.getTicket(), ticketResponse.getSignatureBase64())).isTrue();
         assertThat(ticketResponse.getTicket().getUserId()).isEqualTo(assignee.getId());
         assertThat(ticketResponse.getTicket().isLicenseBlocked()).isFalse();
 

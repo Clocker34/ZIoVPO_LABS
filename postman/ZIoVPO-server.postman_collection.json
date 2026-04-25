@@ -1,8 +1,8 @@
 {
   "info": {
-    "_postman_id": "ziovpo-server-collection",
-    "name": "ZIoVPO Server",
-    "description": "ЗИоВПО — локальная проверка API.\n\nРекомендуемый порядок в Collection Runner:\n1. Логин администратора → сохраняются accessToken / refreshToken\n2. Регистрация пользователя (держатель лицензии) → сохраняется userId\n3. Каталог продуктов/типов → productId и typeId\n4. Создание лицензии (админ)\n5. Активация на устройстве\n6. Проверка лицензии (тикет + ЭЦП)\n7. Продление\n\nПеред запуском: PostgreSQL (`docker compose up -d`), приложение (`cd adboard` → `mvnw spring-boot:run`). Для Docker задайте в окружении или `.env`: SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5433/adboard и SPRING_DATASOURCE_PASSWORD=adboard123.",
+    "_postman_id": "7f8c1c9f-41c3-4d31-9f7f-4a6a5b2c0c2f",
+    "name": "ZIoVPO Server (regenerated)",
+    "description": "Новая коллекция для проверки ZIoVPO API.\n\nРекомендуемый порядок:\n1) POST /auth/login (админ)\n2) POST /api/auth/register (генерирует уникального пользователя)\n3) GET /api/licenses/catalog\n4) POST /api/licenses/admin/create\n5) POST /api/licenses/activate\n6) POST /api/licenses/check\n7) POST /api/licenses/admin/renew\n\nЛокальная БД после последних правок слушает host-порт 55433. Сервис по умолчанию: http://localhost:8082.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -11,15 +11,21 @@
     { "key": "adminPassword", "value": "ChangeMe1!" },
     { "key": "accessToken", "value": "" },
     { "key": "refreshToken", "value": "" },
+    { "key": "holderUsername", "value": "" },
+    { "key": "holderEmail", "value": "" },
+    { "key": "holderPassword", "value": "Secret1!x" },
+    { "key": "userId", "value": "" },
     { "key": "productId", "value": "" },
     { "key": "typeId", "value": "" },
-    { "key": "userId", "value": "" },
+    { "key": "licenseId", "value": "" },
     { "key": "licenseCode", "value": "" },
-    { "key": "licenseId", "value": "" }
+    { "key": "deviceMac", "value": "AA:BB:CC:DD:EE:01" },
+    { "key": "deviceName", "value": "postman-device-1" },
+    { "key": "deviceId", "value": "" }
   ],
   "item": [
     {
-      "name": "Сервис",
+      "name": "00 - Smoke",
       "item": [
         {
           "name": "GET /info",
@@ -36,42 +42,33 @@
             "header": [],
             "url": "{{baseUrl}}/hello"
           }
-        },
-        {
-          "name": "GET /api/ping (нужен JWT)",
-          "request": {
-            "method": "GET",
-            "header": [
-              { "key": "Authorization", "value": "Bearer {{accessToken}}", "type": "text" }
-            ],
-            "url": "{{baseUrl}}/api/ping"
-          }
         }
       ]
     },
     {
-      "name": "Аутентификация",
+      "name": "01 - Auth",
       "item": [
         {
-          "name": "POST /auth/login (админ)",
+          "name": "POST /auth/login (admin)",
           "event": [
             {
               "listen": "test",
               "script": {
+                "type": "text/javascript",
                 "exec": [
-                  "if (pm.response.code === 200) {",
-                  "    var j = pm.response.json();",
-                  "    pm.collectionVariables.set('accessToken', j.accessToken);",
-                  "    pm.collectionVariables.set('refreshToken', j.refreshToken);",
-                  "}"
-                ],
-                "type": "text/javascript"
+                  "pm.test('200 OK', function () { pm.response.to.have.status(200); });",
+                  "var j = pm.response.json();",
+                  "pm.collectionVariables.set('accessToken', j.accessToken || '');",
+                  "pm.collectionVariables.set('refreshToken', j.refreshToken || '');"
+                ]
               }
             }
           ],
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"username\": \"{{adminUsername}}\",\n  \"password\": \"{{adminPassword}}\"\n}"
@@ -85,20 +82,21 @@
             {
               "listen": "test",
               "script": {
+                "type": "text/javascript",
                 "exec": [
-                  "if (pm.response.code === 200) {",
-                  "    var j = pm.response.json();",
-                  "    pm.collectionVariables.set('accessToken', j.accessToken);",
-                  "    pm.collectionVariables.set('refreshToken', j.refreshToken);",
-                  "}"
-                ],
-                "type": "text/javascript"
+                  "pm.test('200 OK', function () { pm.response.to.have.status(200); });",
+                  "var j = pm.response.json();",
+                  "pm.collectionVariables.set('accessToken', j.accessToken || '');",
+                  "pm.collectionVariables.set('refreshToken', j.refreshToken || '');"
+                ]
               }
             }
           ],
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
@@ -107,26 +105,49 @@
           }
         },
         {
-          "name": "POST /api/auth/register (держатель лицензии)",
+          "name": "GET /api/ping (JWT required)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}", "type": "text" }
+            ],
+            "url": "{{baseUrl}}/api/ping"
+          }
+        },
+        {
+          "name": "POST /api/auth/register (new holder)",
           "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var stamp = Date.now();",
+                  "pm.collectionVariables.set('holderUsername', 'license_holder_' + stamp);",
+                  "pm.collectionVariables.set('holderEmail', 'license_holder_' + stamp + '@example.local');"
+                ]
+              }
+            },
             {
               "listen": "test",
               "script": {
+                "type": "text/javascript",
                 "exec": [
-                  "if (pm.response.code === 201) {",
-                  "    pm.collectionVariables.set('userId', pm.response.json().id);",
-                  "}"
-                ],
-                "type": "text/javascript"
+                  "pm.test('201 Created', function () { pm.response.to.have.status(201); });",
+                  "var j = pm.response.json();",
+                  "pm.collectionVariables.set('userId', j.id);"
+                ]
               }
             }
           ],
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"username\": \"license_holder_demo\",\n  \"email\": \"license_holder_demo@example.local\",\n  \"password\": \"Secret1!x\",\n  \"name\": \"License Holder\"\n}"
+              "raw": "{\n  \"username\": \"{{holderUsername}}\",\n  \"email\": \"{{holderEmail}}\",\n  \"password\": \"{{holderPassword}}\",\n  \"name\": \"License Holder\"\n}"
             },
             "url": "{{baseUrl}}/api/auth/register"
           }
@@ -134,7 +155,7 @@
       ]
     },
     {
-      "name": "Лицензии",
+      "name": "02 - Licensing",
       "item": [
         {
           "name": "GET /api/licenses/catalog",
@@ -142,14 +163,13 @@
             {
               "listen": "test",
               "script": {
+                "type": "text/javascript",
                 "exec": [
-                  "if (pm.response.code === 200) {",
-                  "    var j = pm.response.json();",
-                  "    if (j.products && j.products.length) { pm.collectionVariables.set('productId', j.products[0].id); }",
-                  "    if (j.types && j.types.length) { pm.collectionVariables.set('typeId', j.types[0].id); }",
-                  "}"
-                ],
-                "type": "text/javascript"
+                  "pm.test('200 OK', function () { pm.response.to.have.status(200); });",
+                  "var j = pm.response.json();",
+                  "if (j.products && j.products.length > 0) pm.collectionVariables.set('productId', j.products[0].id);",
+                  "if (j.types && j.types.length > 0) pm.collectionVariables.set('typeId', j.types[0].id);"
+                ]
               }
             }
           ],
@@ -173,14 +193,13 @@
             {
               "listen": "test",
               "script": {
+                "type": "text/javascript",
                 "exec": [
-                  "if (pm.response.code === 200) {",
-                  "    var j = pm.response.json();",
-                  "    pm.collectionVariables.set('licenseCode', j.licenseCode);",
-                  "    pm.collectionVariables.set('licenseId', j.licenseId);",
-                  "}"
-                ],
-                "type": "text/javascript"
+                  "pm.test('200 OK', function () { pm.response.to.have.status(200); });",
+                  "var j = pm.response.json();",
+                  "pm.collectionVariables.set('licenseId', j.licenseId || '');",
+                  "pm.collectionVariables.set('licenseCode', j.licenseCode || '');"
+                ]
               }
             }
           ],
@@ -192,7 +211,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"productId\": \"{{productId}}\",\n  \"typeId\": \"{{typeId}}\",\n  \"userId\": {{userId}},\n  \"ownerId\": {{userId}},\n  \"deviceCount\": 2,\n  \"description\": \"Выдано из Postman\"\n}"
+              "raw": "{\n  \"productId\": \"{{productId}}\",\n  \"typeId\": \"{{typeId}}\",\n  \"userId\": {{userId}},\n  \"ownerId\": {{userId}},\n  \"deviceCount\": 2,\n  \"description\": \"Issued from regenerated Postman collection\"\n}"
             },
             "url": "{{baseUrl}}/api/licenses/admin/create"
           }
@@ -201,22 +220,39 @@
           "name": "POST /api/licenses/activate",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"licenseCode\": \"{{licenseCode}}\",\n  \"macAddress\": \"AA:BB:CC:DD:EE:01\",\n  \"deviceName\": \"postman-device\",\n  \"userId\": {{userId}}\n}"
+              "raw": "{\n  \"licenseCode\": \"{{licenseCode}}\",\n  \"macAddress\": \"{{deviceMac}}\",\n  \"deviceName\": \"{{deviceName}}\",\n  \"userId\": {{userId}}\n}"
             },
             "url": "{{baseUrl}}/api/licenses/activate"
           }
         },
         {
           "name": "POST /api/licenses/check",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', function () { pm.response.to.have.status(200); });",
+                  "var j = pm.response.json();",
+                  "if (j.ticket && j.ticket.deviceId) pm.collectionVariables.set('deviceId', j.ticket.deviceId);"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"licenseCode\": \"{{licenseCode}}\",\n  \"macAddress\": \"AA:BB:CC:DD:EE:01\"\n}"
+              "raw": "{\n  \"licenseCode\": \"{{licenseCode}}\",\n  \"macAddress\": \"{{deviceMac}}\"\n}"
             },
             "url": "{{baseUrl}}/api/licenses/check"
           }
@@ -239,7 +275,7 @@
       ]
     },
     {
-      "name": "Администрирование пользователей",
+      "name": "03 - Admin",
       "item": [
         {
           "name": "GET /api/users",

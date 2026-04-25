@@ -6,7 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.rkjrth.adboard.dto.license.*;
 import ru.rkjrth.adboard.entity.*;
 import ru.rkjrth.adboard.repository.*;
-import ru.rkjrth.adboard.security.TicketSigner;
+import ru.mfa.signature.SigningService;
 
 import java.security.SecureRandom;
 import java.time.Instant;
@@ -30,7 +30,7 @@ public class LicenseService {
     private final LicenseDeviceRepository deviceRepository;
     private final DeviceLicenseRepository deviceLicenseRepository;
     private final LicenseHistoryRepository historyRepository;
-    private final TicketSigner ticketSigner;
+    private final SigningService signingService;
 
     private final long ticketLifetimeSeconds;
     private final SecureRandom random = new SecureRandom();
@@ -43,7 +43,7 @@ public class LicenseService {
             LicenseDeviceRepository deviceRepository,
             DeviceLicenseRepository deviceLicenseRepository,
             LicenseHistoryRepository historyRepository,
-            TicketSigner ticketSigner,
+            SigningService signingService,
             @Value("${license.ticket.lifetime-seconds:300}") long ticketLifetimeSeconds) {
         this.licenseRepository = licenseRepository;
         this.productRepository = productRepository;
@@ -52,7 +52,7 @@ public class LicenseService {
         this.deviceRepository = deviceRepository;
         this.deviceLicenseRepository = deviceLicenseRepository;
         this.historyRepository = historyRepository;
-        this.ticketSigner = ticketSigner;
+        this.signingService = signingService;
         this.ticketLifetimeSeconds = ticketLifetimeSeconds;
     }
 
@@ -201,7 +201,7 @@ public class LicenseService {
                 device.getId(),
                 license.isBlocked());
 
-        String sig = ticketSigner.signTicket(ticket);
+        String sig = signingService.sign(ticket);
         return new TicketResponse(ticket, sig);
     }
 
@@ -289,6 +289,6 @@ public class LicenseService {
 
     /** DER X.509 SPKI Base64 для клиентской проверки подписи тикета. */
     public String publicKeyDerBase64() {
-        return ticketSigner.publicKeyDerBase64();
+        return signingService.getPublicKeyDerBase64();
     }
 }

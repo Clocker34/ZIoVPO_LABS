@@ -7,8 +7,8 @@ public class CreateLicenseRequest {
     private UUID productId;
     private UUID typeId;
     /** Пользователь, на которого выписана лицензия. */
-    private Long userId;
-    private Long ownerId;
+    private UUID userId;
+    private UUID ownerId;
     private String description;
     /** Если null — берётся разумный дефолт (например 1). */
     private Integer deviceCount;
@@ -29,19 +29,19 @@ public class CreateLicenseRequest {
         this.typeId = typeId;
     }
 
-    public Long getUserId() {
+    public UUID getUserId() {
         return userId;
     }
 
-    public void setUserId(Long userId) {
+    public void setUserId(UUID userId) {
         this.userId = userId;
     }
 
-    public Long getOwnerId() {
+    public UUID getOwnerId() {
         return ownerId;
     }
 
-    public void setOwnerId(Long ownerId) {
+    public void setOwnerId(UUID ownerId) {
         this.ownerId = ownerId;
     }
 

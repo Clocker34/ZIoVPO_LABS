@@ -1,4 +1,6 @@
 package ru.rkjrth.adboard.dto;
 
-public record UserDto(Long id, String name, String email) {
+import java.util.UUID;
+
+public record UserDto(UUID id, String name, String email) {
 }
