@@ -5,7 +5,9 @@ import ru.rkjrth.adboard.entity.User;
 
 import java.util.Optional;
 
-public interface UserRepository extends JpaRepository<User, Long> {
+import java.util.UUID;
+
+public interface UserRepository extends JpaRepository<User, UUID> {
 
     Optional<User> findByEmail(String email);
 

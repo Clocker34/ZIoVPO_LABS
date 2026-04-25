@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 import java.util.UUID;
 
 @Entity
-@Table(name = "license_devices", indexes = @Index(name = "idx_license_devices_mac", columnList = "mac_address"))
+@Table(name = "device", indexes = @Index(name = "idx_license_devices_mac", columnList = "mac_address"))
 public class LicenseDevice {
 
     @Id

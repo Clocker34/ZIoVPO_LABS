@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import java.util.UUID;
 
 @Entity
 @Table(name = "users", uniqueConstraints = {
@@ -18,8 +19,8 @@ public class User {
     }
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @NotBlank
     @Column(nullable = false, unique = true)
@@ -38,16 +39,27 @@ public class User {
     @Column(nullable = false)
     private Role role = Role.USER;
 
-    /** Временно nullable: старые строки до Spring Security; новые пользователи всегда с хешем. */
     @Column(name = "password_hash", nullable = true)
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String passwordHash;
 
-    public Long getId() {
+    @Column(name = "is_account_expired")
+    private Boolean isAccountExpired = false;
+
+    @Column(name = "is_account_locked")
+    private Boolean isAccountLocked = false;
+
+    @Column(name = "is_credentials_expired")
+    private Boolean isCredentialsExpired = false;
+
+    @Column(name = "is_disabled")
+    private Boolean isDisabled = false;
+
+    public UUID getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(UUID id) {
         this.id = id;
     }
 
@@ -89,6 +101,38 @@ public class User {
 
     public void setPasswordHash(String passwordHash) {
         this.passwordHash = passwordHash;
+    }
+
+    public Boolean getIsAccountExpired() {
+        return isAccountExpired;
+    }
+
+    public void setIsAccountExpired(Boolean isAccountExpired) {
+        this.isAccountExpired = isAccountExpired;
+    }
+
+    public Boolean getIsAccountLocked() {
+        return isAccountLocked;
+    }
+
+    public void setIsAccountLocked(Boolean isAccountLocked) {
+        this.isAccountLocked = isAccountLocked;
+    }
+
+    public Boolean getIsCredentialsExpired() {
+        return isCredentialsExpired;
+    }
+
+    public void setIsCredentialsExpired(Boolean isCredentialsExpired) {
+        this.isCredentialsExpired = isCredentialsExpired;
+    }
+
+    public Boolean getIsDisabled() {
+        return isDisabled;
+    }
+
+    public void setIsDisabled(Boolean isDisabled) {
+        this.isDisabled = isDisabled;
     }
 }
 

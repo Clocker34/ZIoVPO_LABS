@@ -1,12 +1,14 @@
 package ru.rkjrth.adboard.dto.license;
 
+import java.util.UUID;
+
 public class ActivateLicenseRequest {
 
     private String licenseCode;
     private String macAddress;
     private String deviceName;
     /** Должен совпадать с пользователем лицензии и владельцем устройства. */
-    private Long userId;
+    private UUID userId;
 
     public String getLicenseCode() {
         return licenseCode;
@@ -32,11 +34,11 @@ public class ActivateLicenseRequest {
         this.deviceName = deviceName;
     }
 
-    public Long getUserId() {
+    public UUID getUserId() {
         return userId;
     }
 
-    public void setUserId(Long userId) {
+    public void setUserId(UUID userId) {
         this.userId = userId;
     }
 }

@@ -6,7 +6,7 @@ import java.time.LocalDate;
 import java.util.UUID;
 
 @Entity
-@Table(name = "licenses", indexes = @Index(name = "uk_licenses_code", columnList = "code", unique = true))
+@Table(name = "license", indexes = @Index(name = "uk_licenses_code", columnList = "code", unique = true))
 public class License {
 
     @Id

@@ -21,7 +21,7 @@ public class Ticket {
     private LocalDate licenseActivationDate;
     private LocalDate licenseExpirationDate;
 
-    private Long userId;
+    private UUID userId;
     private UUID deviceId;
 
     /** Флаг блокировки лицензии. */
@@ -35,7 +35,7 @@ public class Ticket {
             long ticketLifetimeSeconds,
             LocalDate licenseActivationDate,
             LocalDate licenseExpirationDate,
-            Long userId,
+            UUID userId,
             UUID deviceId,
             boolean licenseBlocked) {
         this.serverCurrentAt = serverCurrentAt;
@@ -79,11 +79,11 @@ public class Ticket {
         this.licenseExpirationDate = licenseExpirationDate;
     }
 
-    public Long getUserId() {
+    public UUID getUserId() {
         return userId;
     }
 
-    public void setUserId(Long userId) {
+    public void setUserId(UUID userId) {
         this.userId = userId;
     }
 

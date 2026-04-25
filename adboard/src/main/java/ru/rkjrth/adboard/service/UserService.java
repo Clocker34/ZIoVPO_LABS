@@ -9,6 +9,7 @@ import ru.rkjrth.adboard.repository.UserRepository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @Transactional(readOnly = true)
@@ -26,7 +27,7 @@ public class UserService {
         return userRepository.findAll();
     }
 
-    public Optional<User> getById(Long id) {
+    public Optional<User> getById(UUID id) {
         return userRepository.findById(id);
     }
 
@@ -52,7 +53,7 @@ public class UserService {
     }
 
     @Transactional
-    public Optional<User> updateByAdmin(Long id, AdminUserRequest req) {
+    public Optional<User> updateByAdmin(UUID id, AdminUserRequest req) {
         return userRepository.findById(id).map(existing -> {
             if (req.getUsername() != null) {
                 userRepository.findByUsername(req.getUsername())
@@ -84,7 +85,7 @@ public class UserService {
     }
 
     @Transactional
-    public boolean delete(Long id) {
+    public boolean delete(UUID id) {
         if (!userRepository.existsById(id)) {
             return false;
         }
