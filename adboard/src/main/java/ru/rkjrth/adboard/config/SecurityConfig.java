@@ -34,6 +34,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/licenses/catalog").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/licenses/signing-public-key").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/licenses/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/signatures/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/signatures/**").authenticated()
                         .requestMatchers("/api/users/**").hasRole("ADMIN")
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

@@ -288,6 +288,126 @@
           }
         }
       ]
+    },
+    {
+      "name": "04 - Malware Signatures",
+      "item": [
+        {
+          "name": "GET /api/signatures (All Actual)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}", "type": "text" }
+            ],
+            "url": "{{baseUrl}}/api/signatures"
+          }
+        },
+        {
+          "name": "POST /api/signatures/admin (Create)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('201 Created', function () { pm.response.to.have.status(201); });",
+                  "var j = pm.response.json();",
+                  "if (j.id) pm.collectionVariables.set('signatureId', j.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}", "type": "text" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"threatName\": \"Trojan.Win32.Demo\",\n  \"firstBytesHex\": \"4D5A9000\",\n  \"remainderHashHex\": \"A1B2C3D4E5\",\n  \"remainderLength\": 1024,\n  \"fileType\": \"EXE\",\n  \"offsetStart\": 0,\n  \"offsetEnd\": 1024\n}"
+            },
+            "url": "{{baseUrl}}/api/signatures/admin"
+          }
+        },
+        {
+          "name": "PUT /api/signatures/admin/:id (Update)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}", "type": "text" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"threatName\": \"Trojan.Win32.Demo.B\",\n  \"firstBytesHex\": \"4D5A9000\",\n  \"remainderHashHex\": \"FFF1112223\",\n  \"remainderLength\": 2048,\n  \"fileType\": \"EXE\",\n  \"offsetStart\": 0,\n  \"offsetEnd\": 2048\n}"
+            },
+            "url": "{{baseUrl}}/api/signatures/admin/{{signatureId}}"
+          }
+        },
+        {
+          "name": "GET /api/signatures/increment",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/signatures/increment?since=2026-01-01T00:00:00Z",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "signatures", "increment"],
+              "query": [
+                { "key": "since", "value": "2026-01-01T00:00:00Z" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST /api/signatures/by-ids",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}", "type": "text" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ids\": [\n    \"{{signatureId}}\"\n  ]\n}"
+            },
+            "url": "{{baseUrl}}/api/signatures/by-ids"
+          }
+        },
+        {
+          "name": "GET /api/signatures/admin/:id/history",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}", "type": "text" }
+            ],
+            "url": "{{baseUrl}}/api/signatures/admin/{{signatureId}}/history"
+          }
+        },
+        {
+          "name": "GET /api/signatures/admin/:id/audit",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}", "type": "text" }
+            ],
+            "url": "{{baseUrl}}/api/signatures/admin/{{signatureId}}/audit"
+          }
+        },
+        {
+          "name": "DELETE /api/signatures/admin/:id",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}", "type": "text" }
+            ],
+            "url": "{{baseUrl}}/api/signatures/admin/{{signatureId}}"
+          }
+        }
+      ]
     }
   ]
 }

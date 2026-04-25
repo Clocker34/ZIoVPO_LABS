@@ -58,7 +58,7 @@ public class LicenseService {
 
     /** Создание лицензии (по диаграмме последовательности выдаётся код клиенту). */
     @Transactional
-    public CreatedLicenseResponse createLicense(CreateLicenseRequest req) {
+    public CreatedLicenseResponse createLicense(CreateLicenseRequest req) { // Проверяем, существуют ли переданные продукт, тип лицензии и пользователи
         LicenseProduct product = productRepository.findById(req.getProductId())
                 .orElseThrow(() -> new IllegalArgumentException("Unknown product"));
         LicenseType type = licenseTypeRepository.findById(req.getTypeId())
@@ -71,7 +71,7 @@ public class LicenseService {
         if (product.isBlocked()) {
             throw new IllegalStateException("Product is blocked");
         }
-
+        //Формируем сущность Лицензии
         License license = new License();
         license.setCode(generateUniqueLicenseCode());
         license.setUser(assignee);
@@ -81,7 +81,7 @@ public class LicenseService {
         license.setDeviceCount(req.getDeviceCount() != null ? req.getDeviceCount() : 1);
         license.setOwner(owner);
         license.setDescription(req.getDescription());
-        licenseRepository.save(license);
+        licenseRepository.save(license); //Сохраняем лицензию в БД и записывает это действо в историю
 
         LicenseHistory h = new LicenseHistory();
         h.setLicense(license);
@@ -90,7 +90,7 @@ public class LicenseService {
         h.setChangeDate(LocalDate.now());
         h.setDescription("License issued");
         historyRepository.save(h);
-
+        // Возвращаем клиенту сгенерированный код, который он должен ввести в программе
         return new CreatedLicenseResponse(license.getId(), license.getCode());
     }
 
@@ -116,7 +116,7 @@ public class LicenseService {
         if (license.getEndingDate() != null && license.getEndingDate().isBefore(today)) {
             throw new IllegalStateException("License expired");
         }
-
+        //Ищем устройство по MAC-адресу или создаем новое
         String mac = normalizeMac(req.getMacAddress());
         LicenseDevice device = deviceRepository.findByMacAddressIgnoreCase(mac).orElse(null);
         User assignee = license.getUser();
@@ -129,16 +129,16 @@ public class LicenseService {
         } else if (!device.getUser().getId().equals(assignee.getId())) {
             throw new IllegalArgumentException("Device belongs to another user");
         }
-
+        //Проверяем, не активировал ли уже юзер эту лицензию на этом же устройстве
         if (!deviceLicenseRepository.findByLicenseIdAndDeviceId(license.getId(), device.getId()).isEmpty()) {
             throw new IllegalStateException("License already activated on this device");
         }
-
+        //Лимиты
         long activeDevices = deviceLicenseRepository.countByLicense_Id(license.getId());
         if (activeDevices >= license.getDeviceCount()) {
             throw new IllegalStateException("Device limit reached for this license");
         }
-
+        //связь
         DeviceLicense link = new DeviceLicense();
         link.setLicense(license);
         link.setDevice(device);
@@ -191,7 +191,7 @@ public class LicenseService {
         if (!validPeriod) {
             throw new IllegalStateException("License expired");
         }
-
+        //Формируем ТИКЕТ со всеми требуемыми данными
         Ticket ticket = new Ticket(
                 Instant.now(),
                 ticketLifetimeSeconds,
@@ -213,11 +213,11 @@ public class LicenseService {
         if (license.isBlocked()) {
             throw new IllegalStateException("License blocked");
         }
-
+        //Берем кол-во дней для продления из запроса, либо дефолтное из типа лицензии
         int extendDays = req.getExtendDays() != null && req.getExtendDays() > 0
                 ? req.getExtendDays()
                 : license.getLicenseType().getDefaultDurationInDays();
-
+        //Вычисление конца лицензии, при просрочке, продление от сегодня
         LocalDate today = LocalDate.now();
         LocalDate base = license.getEndingDate() == null
                 ? today
