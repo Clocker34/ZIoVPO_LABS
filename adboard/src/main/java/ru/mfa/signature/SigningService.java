@@ -49,4 +49,24 @@ public class SigningService {
         if (publicKey == null) return null;
         return Base64.getEncoder().encodeToString(publicKey.getEncoded());
     }
+
+    /**
+     * Signs an already-serialized binary document (e.g. manifest without the trailing signature fields).
+     * Uses the same algorithm as object signing: SHA256withRSA over raw bytes.
+     */
+    public byte[] signBytes(byte[] payload) throws Exception {
+        PrivateKey privateKey = keyStoreService.getPrivateKey();
+        Signature signature = Signature.getInstance("SHA256withRSA");
+        signature.initSign(privateKey);
+        signature.update(payload);
+        return signature.sign();
+    }
+
+    public boolean verifyBytes(byte[] payload, byte[] signatureBytes) throws Exception {
+        PublicKey publicKey = keyStoreService.getPublicKey();
+        Signature signature = Signature.getInstance("SHA256withRSA");
+        signature.initVerify(publicKey);
+        signature.update(payload);
+        return signature.verify(signatureBytes);
+    }
 }

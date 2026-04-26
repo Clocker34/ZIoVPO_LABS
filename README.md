@@ -1,4 +1,4 @@
-# ЗИоВПО — серверная часть (задания 1–4)
+# ЗИоВПО — серверная часть (задания 1–5)
 
 Репозиторий серверного приложения на **Spring Boot 3.5** и **Java 17**. Исходники — в каталоге **`adboard/`**.
 
@@ -20,19 +20,39 @@
 ### Быстрый старт
 
 **База в Docker** (из корня репозитория):
+
 ```powershell
 docker compose up -d
 ```
-*Внимание: локальный порт базы изменен на 55433, чтобы не конфликтовать с вашей системной БД.*
+
+Порт PostgreSQL на хосте по умолчанию: **`54333`** (см. `docker-compose.yml` и переменную `POSTGRES_HOST_PORT`).
 
 Запуск сервера:
+
 ```powershell
 cd adboard
 .\mvnw.cmd spring-boot:run
 ```
 
-**Коллекция Postman:** файл **`postman/ZIoVPO-server.postman_collection.json`**. 
-В ней реализован весь сквозной цикл тестирования (авторизация $\rightarrow$ регистрация $\rightarrow$ выдача лицензии $\rightarrow$ активация $\rightarrow$ проверка ЭЦП $\rightarrow$ управление сигнатурами). Просто запускайте запросы сверху вниз.
+**Коллекция Postman:** файл **`postman/ZIoVPO-server.postman_collection.json`**.
+
+Рекомендуемый порядок: авторизация админа → регистрация пользователя → каталог и выдача лицензии → сигнатуры → **папка «05 - Binary signatures»** для `multipart/mixed`.
+
+### Сброс БД для демонстрации
+
+Полная очистка таблиц приложения (Docker Postgres), затем **перезапуск Spring** — снова создаются учётная запись администратора (`DataInitializer`), продукт и тип лицензии (`LicenseMetadataBootstrap`).
+
+PowerShell из корня репозитория:
+
+```powershell
+Get-Content -Path ".\scripts\reset-postgres-demo.sql" -Raw | docker compose exec -T postgres psql -U postgres -d adboard
+```
+
+Или:
+
+```powershell
+.\scripts\reset-demo-db.ps1
+```
 
 ---
 
@@ -55,35 +75,47 @@ cd adboard
 
 ## Задание 3. Электронная цифровая подпись (ЭЦП)
 
-Архитектура строго разделена на три компонента в пакете `ru.mfa.signature`:
-1. **Key Provider (`SignatureKeyStoreService`)**: Загружает настоящие ключи (RSA 2048) из хранилища `signing.jks`.
-2. **Canonicalization (`JsonCanonicalizer`)**: Приводит любой DTO (Тикет или Сигнатуру) к детерминированному JSON-виду строго по стандарту **RFC 8785**.
-3. **Signing Service (`SigningService`)**: Формирует SHA256-хэш от канонизированного JSON и подписывает его приватным ключом (возвращает Base64).
+Архитектура разделена на компоненты в пакете `ru.mfa.signature`:
 
-Клиент (ваша программа) может запросить публичный сертификат через `GET /api/licenses/signing-public-key` для верификации подписи.
+1. **Key Provider (`SignatureKeyStoreService`)**: загрузка ключей RSA из **`signing.jks`**.
+2. **Canonicalization (`JsonCanonicalizer`)**: детерминированный JSON по **RFC 8785** для объектов (`Ticket`, `SignaturePayload` и др.).
+3. **Signing Service (`SigningService`)**: **`sign(Object)`** — канонизация + **SHA256withRSA** + Base64; **`signBytes(byte[])`** / **`verifyBytes`** — подпись и проверка **готового байтового документа** (манифест бинарного пакета).
+
+Публичный ключ для проверки на клиенте: **`GET /api/licenses/signing-public-key`**.
 
 ---
 
 ## Задание 4. Модуль управления антивирусными сигнатурами
 
-Реализован компонент хранения и раздачи антивирусных баз с полным логированием и защитой от подмены. Логика находится в `MalwareSignatureService`.
+Реализованы хранение, инкрементальные обновления, аудит и ЭЦП записей (`MalwareSignatureService`).
 
 ### Структура БД
-- **`signatures` (`MalwareSignature`)**: Хранит текущее, актуальное состояние вирусной сигнатуры (hex-коды, смещения, `threatName`, статус `ACTUAL`/`DELETED`). Каждая запись содержит свою ЭЦП (`digitalSignatureBase64`).
-- **`signatures_history`**: Хранит старые версии записей (до Update или Delete).
-- **`signatures_audit`**: Журнал действий (кто, когда и какие поля поменял).
 
-### Реализованы все 8 обязательных операций:
-1. **Полная база (`GET /api/signatures`)**: выдает только `ACTUAL` сигнатуры.
-2. **Инкремент (`GET /api/signatures/increment?since=...`)**: выдает все измененные сигнатуры с указанного момента, включая `DELETED`. Используется антивирусом для обновления локальной базы.
-3. **Запрос по ID (`POST /api/signatures/by-ids`)**
-4. **Создание (`POST /api/signatures/admin`)**: вычисляет ЭЦП и пишет лог в Аудит.
-5. **Обновление (`PUT /api/signatures/admin/{id}`)**: пересчитывает ЭЦП, сохраняет старую версию в Историю, пишет в Аудит список измененных полей.
-6. **Логическое удаление (`DELETE /api/signatures/admin/{id}`)**: переводит статус в `DELETED`, пересчитывает ЭЦП, сохраняет Историю и пишет Аудит.
-7. **Получение истории (`GET /api/signatures/admin/{id}/history`)**
-8. **Получение аудита (`GET /api/signatures/admin/{id}/audit`)**
+- **`signatures` (`MalwareSignature`)**: текущее состояние, статус `ACTUAL` / `DELETED`, поле **`digitalSignatureBase64`**.
+- **`signatures_history`**: версии до обновления или удаления.
+- **`signatures_audit`**: кто и что менял.
 
-Каждое изменение в антивирусной базе надежно подписывается приватным ключом (RFC 8785), чтобы гарантировать целостность обновлений на стороне клиента.
+### Восемь операций JSON API
+
+Полная база (только `ACTUAL`), инкремент (включая `DELETED`), выборка по ID, CRUD админом, история и аудит — см. **`MalwareSignatureController`** (`/api/signatures/**`).
+
+---
+
+## Задание 5. Бинарный API выдачи сигнатур (`multipart/mixed`)
+
+Транспортный слой отделён от CRUD: базовый путь **`/api/binary/signatures`**, доступ с любой аутентификацией (**`SecurityConfig`**).
+
+| Метод | Назначение |
+|--------|------------|
+| **`GET /api/binary/signatures/full`** | Полная выгрузка только **`ACTUAL`** |
+| **`GET /api/binary/signatures/increment?since=...`** | Записи с **`updatedAt > since`**, включая **`DELETED`**; **`since`** — epoch millis (только цифры) или ISO-8601 |
+| **`POST /api/binary/signatures/by-ids`** | Тело `{"ids":["uuid",...]}` — только найденные записи |
+
+Ответ: **`multipart/mixed`**, части по порядку **`manifest.bin`**, **`data.bin`** (`MultipartMixedBodyBuilder`). В манифест попадают уже сохранённые подписи записей; **подписывается заново только манифест** (`SigningService.signBytes`).
+
+Формат бинарных файлов: **BigEndian** для чисел; magic UTF-8: **`MF-Парамонов`** / **`DB-Парамонов`** (префикс методички + фамилия). Сборка: **`SignatureBinaryExportService`**, вспомогательные классы в **`ru.rkjrth.adboard.binary`**.
+
+Тесты: **`BinarySignatureExportIntegrationTest`**.
 
 ---
 
