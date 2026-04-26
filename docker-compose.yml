@@ -7,9 +7,9 @@ services:
       POSTGRES_DB: adboard
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-adboard123}
-    # Если локальный PostgreSQL уже слушает 5432/5433 — используем 55433 на хосте
+    # Если локальный PostgreSQL уже слушает 5432/5433 — используем 54333 на хосте
     ports:
-      - "${POSTGRES_HOST_PORT:-55433}:5432"
+      - "${POSTGRES_HOST_PORT:-54333}:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d adboard"]
       interval: 3s

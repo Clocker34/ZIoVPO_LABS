@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "7f8c1c9f-41c3-4d31-9f7f-4a6a5b2c0c2f",
     "name": "ZIoVPO Server (regenerated)",
-    "description": "Новая коллекция для проверки ZIoVPO API.\n\nРекомендуемый порядок:\n1) POST /auth/login (админ)\n2) POST /api/auth/register (генерирует уникального пользователя)\n3) GET /api/licenses/catalog\n4) POST /api/licenses/admin/create\n5) POST /api/licenses/activate\n6) POST /api/licenses/check\n7) POST /api/licenses/admin/renew\n\nЛокальная БД после последних правок слушает host-порт 55433. Сервис по умолчанию: http://localhost:8082.",
+    "description": "Коллекция для проверки ZIoVPO API (лицензии, сигнатуры, бинарный экспорт).\n\nРекомендуемый порядок:\n1) POST /auth/login (админ)\n2) POST /api/auth/register (держатель лицензии)\n3) GET /api/licenses/catalog\n4) POST /api/licenses/admin/create\n5) POST /api/licenses/activate\n6) POST /api/licenses/check\n7) Сигнатуры: POST create → GET full / binary full → …\n\nОчистка БД для демо преподавателю: scripts/reset-postgres-demo.sql (см. комментарий в файле; затем перезапуск Spring).\n\nPostgreSQL в Docker: порт хоста по умолчанию 54333 (см. docker-compose). Сервер: http://localhost:8082.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -21,7 +21,9 @@
     { "key": "licenseCode", "value": "" },
     { "key": "deviceMac", "value": "AA:BB:CC:DD:EE:01" },
     { "key": "deviceName", "value": "postman-device-1" },
-    { "key": "deviceId", "value": "" }
+    { "key": "deviceId", "value": "" },
+    { "key": "signatureId", "value": "" },
+    { "key": "signatureSinceEpoch", "value": "0" }
   ],
   "item": [
     {
@@ -211,7 +213,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"productId\": \"{{productId}}\",\n  \"typeId\": \"{{typeId}}\",\n  \"userId\": {{userId}},\n  \"ownerId\": {{userId}},\n  \"deviceCount\": 2,\n  \"description\": \"Issued from regenerated Postman collection\"\n}"
+              "raw": "{\n  \"productId\": \"{{productId}}\",\n  \"typeId\": \"{{typeId}}\",\n  \"userId\": \"{{userId}}\",\n  \"ownerId\": \"{{userId}}\",\n  \"deviceCount\": 2,\n  \"description\": \"Issued from Postman collection\"\n}"
             },
             "url": "{{baseUrl}}/api/licenses/admin/create"
           }
@@ -225,7 +227,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"licenseCode\": \"{{licenseCode}}\",\n  \"macAddress\": \"{{deviceMac}}\",\n  \"deviceName\": \"{{deviceName}}\",\n  \"userId\": {{userId}}\n}"
+              "raw": "{\n  \"licenseCode\": \"{{licenseCode}}\",\n  \"macAddress\": \"{{deviceMac}}\",\n  \"deviceName\": \"{{deviceName}}\",\n  \"userId\": \"{{userId}}\"\n}"
             },
             "url": "{{baseUrl}}/api/licenses/activate"
           }
@@ -405,6 +407,109 @@
               { "key": "Authorization", "value": "Bearer {{accessToken}}", "type": "text" }
             ],
             "url": "{{baseUrl}}/api/signatures/admin/{{signatureId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "05 - Binary signatures (multipart)",
+      "item": [
+        {
+          "name": "GET /api/binary/signatures/full",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 multipart/mixed', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(pm.response.headers.get('Content-Type') || '').to.include('multipart/mixed');",
+                  "});",
+                  "pm.test('non-empty body', function () {",
+                  "  pm.expect(pm.response.text().length).to.be.above(32);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}", "type": "text" }
+            ],
+            "url": "{{baseUrl}}/api/binary/signatures/full"
+          }
+        },
+        {
+          "name": "GET /api/binary/signatures/increment (epoch ms)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get('signatureSinceEpoch') || pm.collectionVariables.get('signatureSinceEpoch') === '0') {",
+                  "  pm.collectionVariables.set('signatureSinceEpoch', String(Date.now() - 86400000));",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 multipart/mixed', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(pm.response.headers.get('Content-Type') || '').to.include('multipart/mixed');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/binary/signatures/increment?since={{signatureSinceEpoch}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "binary", "signatures", "increment"],
+              "query": [
+                { "key": "since", "value": "{{signatureSinceEpoch}}" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST /api/binary/signatures/by-ids",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 multipart/mixed', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(pm.response.headers.get('Content-Type') || '').to.include('multipart/mixed');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}", "type": "text" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ids\": [\n    \"{{signatureId}}\"\n  ]\n}"
+            },
+            "url": "{{baseUrl}}/api/binary/signatures/by-ids"
           }
         }
       ]
